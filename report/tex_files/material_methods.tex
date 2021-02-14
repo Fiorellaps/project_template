@@ -1,1 +1,53 @@
 \section{Materiales y métodos}
+\subsection{Carga de datos}
+El primer paso para poder modelar y análizar nuestra red es descargar los datos desde StringDB.
+Hemos obtenido la red de 332 mencionada por Gordon et al en la versión web de StringDB, ampliando el número de proteínas en la segunda capa hasta obtener una red completamente conectada, que hemos descargado en formato tsv. Este archivo lo hemos usado posteriormente para cargar la red en nuestro entorno de trabajo usando el paquete stringDB que proporciona R.
+
+\begin{lstlisting}
+string_db <- STRINGdb$new(version = "11", 
+                          species = 9606, 
+                          score_threshold = 400, 
+                          input_directory = "")
+
+proteins.table <- read.delim(file = 'files/string_protein_annotations.tsv', 
+sep = '\t', header = TRUE)
+proteins.names <- data.frame(proteins.table[1])
+colnames(proteins.names)[1] <- "genes"
+proteins.mapped.table <- string_db$map(proteins.names, "genes",
+removeUnmappedRows = TRUE)
+proteins.mapped.string_ids <- proteins.mapped.table$STRING_id
+
+string.network <- string_db$get_graph()
+proteins.mapped.network <-
+        string_db$get_subnetwork(proteins.mapped.string_ids)
+
+proteins.mapped.network.comp <- components(proteins.mapped.network)
+nodes_to_remove <-names(proteins.mapped.network.comp$
+    membership[proteins.mapped.network.comp$membership!=1]) 
+
+proteins.mapped.network <- delete_vertices(proteins.mapped.network,
+nodes_to_remove)
+
+\end{lstlisting}
+
+
+\subsection{Análisis inicial y robustez}
+Para el análisis inicial de la red nos hemos centrado en 3 parámetros básicos: distribución del grado, coeficiente de clústering y distancia de los nodos. 
+
+En cuanto a la robustez, se ha calculado tanto frente a ataques aleatorios como frente a ataques dirigidos, haciendo uso del código proporcionado en el campus virtual.
+
+\subsection{Linked Communities}
+Para la búsqueda de comunidades se ha empleado el paquete \textbf{linkcomm}, una herramienta que permita la creación, visualización y tratamiento de comunidades dentro de un grafo (igraph). Con la ayuda del documento \textit{'The generation, visualization, and analysis of link communities in arbitrary networks with the R package linkcomm'}, hemos conseguido encontrar las comunidades más importantes (centralidad) y los módulos existentes en nuestra red. Además, se han realizado diversas representaciones gráficas para visualizar las comunidades de una forma más atractiva. 
+
+\subsection{Enriquecimiento funcional}
+Una vez obtenido el análisis de las comunidades queremos llevar a cabo un análisis de enriquecimiento funcional para poder obtener principalmente en qué procesos biológicos están involucrados los clústers más conectados obtenidos. 
+
+Comenzamos con un enriquecimiento funcional a partir de \textbf{STRINGdb}. En este caso se combinan la ontología \textbf{GO} y las base de datos \textbf{KEGG} y \textbf{Pfam}. Obtenemos los resultados del enriquecimiento de los diferentes clústers seleccionados mediante ficheros csv. 
+
+Elaboramos un segundo enriquecimiento funcional mediante el paquete \textbf{clusterProfiler}. Con este análisis corroboramos las funcionalidades obtenidas con el anterior enriquecimiento y mostramos gráficas para una visualización de los datos más intuitiva. Hemos elaborado una función con la cual mapeamos los identificadores de las proteínas para obtener los respectivos genes a partir de los cuales aplicamos las funciones de enriquecimiento mediante \textbf{GO} y \textbf{KEGG}. Hemos empleado el \textbf{método de simplificación} que ofrece clusterProfiler para evitar la redundancia de los datos resultantes del enriquecimiento. Esta función la hemos aplicado sobre el enriquecimiento mediante \textbf{enrichGO} siempre que indiquemos alguno de los dominios de la ontología GO (en los resultamos hemos utilizado principalmente Biological Process (BP)). 
+
+Con este análisis obtenemos variedad de gráficas a partir de funciones como \textbf{cnetplot} y \textbf{heatplot} entre otras, con las cuales analizaremos la repercusión biológica de estos módulos.
+
+\subsection{Búsqueda en Drugbank}
+Por último, hemos buscado en la base de datos drugbank los identificadores de los medicamentos cuyos targets se encuentran entre las proteínas más conectadas de nuestra red.
+Finalmente, hemos elegido limitarnos a aquellos medicamentos que ya están aprobados, ya que la carga de la base de datos completa en el entorno de trabajo disparaba el tiempo de ejecución.
