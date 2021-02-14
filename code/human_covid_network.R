@@ -432,3 +432,23 @@ res_83 <- enriquecimiento(83)
 # View(res_83)
 write.csv(res_83, "enriquecimiento_funcional_c083.csv")
 
+
+############################ DRUG TRAGETS ########################
+
+G = proteins.mapped.network
+max_v<-NULL
+db_drugbank <- read.csv("files/all.csv")
+for(var in 0:20)
+{
+  v_max <- NULL
+  v_max <- V(G)$name[degree(G)==max(degree(G))]
+  max_v <- c(max_v, v_max)
+  G <- delete_vertices(G, v_max)
+}
+
+max_v<-as.data.frame(max_v)
+names(max_v)[names(max_v)=="max_v"]<-"identifier"
+targets.df <- merge(proteins.table, max_v, by='identifier')
+names(targets.df)[names(targets.df)=="X.node"]<-"Gene.Name"
+drug_ids <- merge(targets.df, db_drugbank, by='Gene.Name')$Drug.IDs
+cat("IDs de los medicamentos cuyos targets se encuentran entre la proteínas más conectadas de la red: ", drug_ids)
