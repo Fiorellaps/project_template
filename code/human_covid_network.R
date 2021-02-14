@@ -432,6 +432,195 @@ res_83 <- enriquecimiento(83)
 # View(res_83)
 write.csv(res_83, "enriquecimiento_funcional_c083.csv")
 
+######################## ANÁLISIS FUNCIONAL CLUSTERPROFILER SANDRA #############################
+
+print("##################################################################")
+print("##################################################################")
+print("Enriquecimiento Funcional con clusterProfiler")
+
+ensembl <- biomaRt::useMart("ensembl", dataset = "hsapiens_gene_ensembl")
+
+## Function to get Cluster profiler's enrichments ##
+Cluster_profiler_enrichment <- function(clusters, ontology_type){
+  
+  # Getting strings id
+  all_string_ids <- c()
+  for(i in clusters){
+    string_ids <- linkcomm::getNodesIn(proteins.mapped.network.lc, clusterids = i, type = "names")
+    all_string_ids <- c(all_string_ids, string_ids)
+  }
+  
+  # Getting long names to apply getBM function
+  string_long_ids <- c()
+  for(id in all_string_ids){
+    id <- paste("ENSP00000", id, sep = "")
+    string_long_ids <- c(string_long_ids, id)
+  }
+  
+  # Getting different gene's id
+  gene_table <- biomaRt::getBM(attributes = c("entrezgene_id", 
+                                     "ensembl_gene_id", 
+                                     "ensembl_peptide_id" ,
+                                     "hgnc_symbol"),
+                      filters = "ensembl_peptide_id" , 
+                      values = string_long_ids,
+                      mart = ensembl)
+  # enrichGO
+  enrichment_GO <- clusterProfiler::enrichGO(gene = gene_table$ensembl_gene_id,
+                            OrgDb = org.Hs.eg.db,
+                            keyType = 'ENSEMBL',
+                            ont  = ontology_type,
+                            pAdjustMethod = "BH")
+  # Add symbol from GeneID
+  enrichment_GO_symbol <- DOSE::setReadable(enrichment_GO, OrgDb = org.Hs.eg.db)
+  
+  # enrichKEGG
+  enrichment_KEGG <- clusterProfiler::enrichKEGG(gene_table$entrezgene_id, 
+                                organism = "hsa", 
+                                pvalueCutoff = 0.05, 
+                                pAdjustMethod = "BH", 
+                                qvalueCutoff = 0.1)
+  
+  return(list(gene_table, enrichment_GO_symbol, enrichment_KEGG)) 
+}
+
+## Function to get ClusterProfiler graphics ##
+Cluster_profiler_graphics <- function(clusters, ontology_type, enrichment_GO_symbol, enrichment_KEGG){
+  # ontology_type = "MF", "BP" or "CC"
+  # File names
+  if(length(clusters)>1){
+    clusters <- paste(unlist(clusters), collapse=';')
+  } 
+  if(length(clusters)>5){
+    clusters <- "multiple_cluster_case"
+  }
+  
+  # Dotplot (with complete results)
+  file <- paste(sep = "", "enrichGO_dotplot-", ontology_type, "-", clusters, ".pdf")
+  pdf(file, width = 10, height = 5)
+  plot1 <- dotplot(x = "count", enrichment_GO_symbol, showCategory = 30)
+  print(plot1)
+  dev.off()
+  
+  # We remove redundance information if ontology is specified
+  # If ont = "ALL" we can't apply simplify
+  if(ontology_type != "ALL"){
+    enrichment_GO <- clusterProfiler::simplify(enrichment_GO_symbol, 
+                                       cutoff = 0.7, 
+                                       by = "p.adjust", 
+                                       select_fun = min)
+  } else {
+    enrichment_GO <- enrichment_GO_symbol
+  }
+ 
+  # Heatplot and cnetplot
+  plot2 <- heatplot(enrichment_GO)
+  plot3 <- cnetplot(enrichment_GO, layout = "kk", colorEdge = TRUE)
+  file <- paste(sep = "", "enrichGO_heatmap_cnetplot-", ontology_type, "-", clusters, ".pdf")
+  pdf(file, width = 20, height = 7)
+  print(plot_grid(plot2, plot3, ncol=2))
+  dev.off()
+  
+  # Enrichment map
+  file <- paste(sep = "", "enrichGO_enrichmap-", ontology_type, "-", clusters, ".pdf")
+  pdf(file, width = 12, height = 5)
+  plot4 <- emapplot(pairwise_termsim(x = enrichment_GO),  
+                    node_scale = 1.2,
+                    line_scale = 0.2, 
+                    layout = "kk")
+  print(plot4)
+  dev.off()
+  
+  # enrichKEGG
+  if(is.null(enrichment_KEGG) == FALSE){
+    
+    if(nrow(enrichment_KEGG@result) > 1){
+      
+      file <- paste(sep = "", "enrichKEGG_cnetplot-", ontology_type, "-", clusters, "-", ".pdf")
+      # Get genes symbols to get good graph name 
+      enrichment_KEGG_symbol <- DOSE::setReadable(enrichment_KEGG, OrgDb = org.Hs.eg.db,  keyType="ENTREZID")
+      pdf(file, width = 10, height = 5)
+      plot5 <- cnetplot(enrichment_KEGG_symbol, layout = "kk", colorEdge = TRUE)
+      print(plot5)
+      dev.off()
+      
+      file <- paste(sep = "", "enrichKEGG_enrichmap-", ontology_type, "-", clusters, ".pdf")
+      pdf(file, width = 14, height = 7)
+      plot6 <- emapplot(pairwise_termsim(x = enrichment_KEGG), 
+                        cex_category = 1.4,
+                        cex_line = 0.2, 
+                        layout = "nicely")
+      print(plot6)
+      dev.off()
+      
+    } else {
+      write.csv(enrichment_KEGG@result, file = paste("enrichmentKEGG_", ontology_type, "_", clusters, ".csv"))
+    }
+  }
+}
+
+# cluster 79 
+enrichment_79 <- Cluster_profiler_enrichment(clusters = 79, 
+                                             ontology_type = "BP")
+enrichment_79_graphics <- Cluster_profiler_graphics(clusters = 79, 
+                                                    ontology_type = "BP", 
+                                                    enrichment_GO_symbol = enrichment_79[[2]], 
+                                                    enrichment_KEGG = enrichment_79[[3]])
+
+# cluster 84
+enrichment_84 <- Cluster_profiler_enrichment(clusters = c(84), 
+                                             ontology_type = "BP")
+enrichment_84_graphics <- Cluster_profiler_graphics(clusters = 84, 
+                                                       ontology_type = "BP", 
+                                                       enrichment_GO_symbol = enrichment_84[[2]], 
+                                                       enrichment_KEGG = enrichment_84[[3]])
+
+# cluster 58
+enrichment_58 <- Cluster_profiler_enrichment(clusters = 58, 
+                                             ontology_type = "BP")
+enrichment_58_graphics <- Cluster_profiler_graphics(clusters = 58, 
+                                                    ontology_type = "BP", 
+                                                    enrichment_GO_symbol = enrichment_58[[2]], 
+                                                    enrichment_KEGG = enrichment_58[[3]])
+
+# cluster 104 (funciona en R pero no en bash)
+# enrichment_104 <- Cluster_profiler_enrichment(clusters = 104, 
+                                              # ontology_type = "BP")
+# enrichment_104_graphics <- Cluster_profiler_graphics(clusters = 104, 
+                                                     # ontology_type = "BP", 
+                                                     # enrichment_GO_symbol = enrichment_104[[2]], 
+                                                     # enrichment_KEGG = enrichment_104[[3]])
+
+# cluster 83: Con un análisis solo de este cluster se obtiene poca información  
+enrichment_83 <- Cluster_profiler_enrichment(clusters = 83, 
+                                             ontology_type = "BP")
+enrichment_83_graphics <- Cluster_profiler_graphics(clusters = 83, 
+                                                    ontology_type = "BP", 
+                                                    enrichment_GO_symbol = enrichment_83[[2]], 
+                                                    enrichment_KEGG = enrichment_83[[3]])
+
+enrichment_all_clusters <- Cluster_profiler_enrichment(clusters = c(79, 84, 58, 104, 83), 
+                                                       ontology_type = "BP")
+
+enrichment_all_clusters_graphics <- Cluster_profiler_graphics(clusters = c(79, 84, 58, 104, 83), 
+                                                              ontology_type = "BP", 
+                                                              enrichment_GO_symbol = enrichment_all_clusters[[2]], 
+                                                              enrichment_KEGG = enrichment_all_clusters[[3]])
+
+
+# enrichDGN -> we haven't included in global function (in most of our cases we dont get diseases information)
+# we could obtain results with cluster 79, 84 and 58
+# enrichment_DGN <- enrichDGN(enrichment_58[[1]]$entrezgene_id)
+# enrichment_DGN_symbol <- DOSE::setReadable(enrichment_DGN, OrgDb = org.Hs.eg.db)
+# plot7 <- cnetplot(enrichment_DGN_symbol)
+# plot8 <- emapplot(enrichment_DGN_symbol, 
+                    # pie_scale = 1.4,
+                    # line_scale = 0.2, 
+                    # layout = "kk")
+# file <- paste(sep = "", "enrichDGN_cnetplot_enrichmap-", 58, ".pdf")
+# pdf(file, width = 14, height = 6)
+# print(plot_grid(plot7, plot8, ncol=2))
+# dev.off()
 
 ############################ DRUG TRAGETS ########################
 
