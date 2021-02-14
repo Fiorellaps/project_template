@@ -1,6 +1,53 @@
 
 \section{Resultados}
 
+\subsection{Análisis inicial y robustez}
+
+Como podemos observar, la distribución del grado de nuestros nodos sigue  la ley de potencias, por lo que podemos decir que el modelo libre de escala es el que más se ajusta a nuestra red, algo que ya sabíamos de antemano, ya que estamos modelando una red real.
+
+En cuanto a los hubs, podemos decir que hay dos grupos bastante diferenciados 
+\begin{center}
+
+\includegraphics[width=70mm,scale=1.2]{report/figures/degree_distribution.png}
+
+\caption{\textit{Distribución del grado en escala logarítmica}}
+
+\end{center}
+
+En este caso, el coeficiente medio de clustering de nuestra red es de 0.43.
+En la figura podemos observar que los nodos con un grado menor varían mucho en cuanto a C, teniendo nodos que están muy agregados y otros que están casi desconectados. Esto no pasa en los hubs, que se mantienen muy cercanos en cuanto a transitividad
+
+\begin{center}
+
+\includegraphics[width=70mm,scale=1.2]{report/figures/clustering_coefficient.png}
+
+\caption{\textit{Coeficiente de clustering}}
+
+\end{center}
+
+Si nos fijamos en la distancia entre los nodos de nuestra red, podemos comprobar que tiene propiedad de mundo pequeño, ya que la mayoría de nodos tienen distancia 3 o 4, siendo la media 3.46.
+Es decir, nuestra red está bien comunicada.
+
+\begin{center}
+
+\includegraphics[width=70mm,scale=1.2]{report/figures/Node_distance.png}
+
+\caption{\textit{Distancia entre los nodos}}
+
+\end{center}
+
+En la siguiente figura observamos que la red es bastante robusta ante ataques aleatorios y bastante menos ante ataques dirigidos, lo que nos indica una vez más que el modelo libre de escala es el que se ajusta mejor.
+
+Que disminuya tan rápido la conectividad eliminando una fracción tan pequeña de nos indica que debemos centrarnos en el estudio de esas proteínas principalmente.
+
+\begin{center}
+
+\includegraphics[width=70mm,scale=1.2]{report/figures/sequential_attacks.png}
+
+\caption{\textit{Robustez frente a ataques dirigidos y aleatorios}}
+
+\end{center}
+
 \subsection{Linked Communities}
 En esta sección procedemos a obtener las comunidades existentes dentro de nuestra red de proteínas, obtenida en la sección anterior.
 
