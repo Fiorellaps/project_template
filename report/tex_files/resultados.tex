@@ -3,7 +3,8 @@
 
 \subsection{Análisis inicial y robustez}
 
-Como podemos observar, la distribución del grado de nuestros nodos sigue  la ley de potencias, por lo que podemos decir que el modelo libre de escala es el que más se ajusta a nuestra red, algo que ya sabíamos de antemano, ya que estamos modelando una red real.
+Como podemos observar, la distribución del grado de nuestros nodos sigue  la ley de potencias, por lo que podemos decir que el modelo libre de escala es el que más se ajusta a
+nuestra red, algo que ya sabíamos de antemano, ya que estamos modelando una red real.
 
 En cuanto a los hubs, podemos decir que hay dos grupos bastante diferenciados 
 \begin{center}
@@ -15,7 +16,8 @@ En cuanto a los hubs, podemos decir que hay dos grupos bastante diferenciados
 \end{center}
 
 En este caso, el coeficiente medio de clustering de nuestra red es de 0.43.
-En la figura podemos observar que los nodos con un grado menor varían mucho en cuanto a C, teniendo nodos que están muy agregados y otros que están casi desconectados. Esto no pasa en los hubs, que se mantienen muy cercanos en cuanto a transitividad
+En la figura podemos observar que los nodos con un grado menor varían mucho en cuanto a C, teniendo nodos que están muy agregados y otros que están casi desconectados. 
+Esto no pasa en los hubs, que se mantienen muy cercanos en cuanto a transitividad
 
 \begin{center}
 
@@ -25,7 +27,8 @@ En la figura podemos observar que los nodos con un grado menor varían mucho en 
 
 \end{center}
 
-Si nos fijamos en la distancia entre los nodos de nuestra red, podemos comprobar que tiene propiedad de mundo pequeño, ya que la mayoría de nodos tienen distancia 3 o 4, siendo la media 3.46.
+Si nos fijamos en la distancia entre los nodos de nuestra red, podemos comprobar que tiene propiedad de mundo pequeño, ya que la mayoría de nodos tienen distancia 3 o 4, 
+siendo la media 3.46.
 Es decir, nuestra red está bien comunicada.
 
 \begin{center}
@@ -36,7 +39,8 @@ Es decir, nuestra red está bien comunicada.
 
 \end{center}
 
-En la siguiente figura observamos que la red es bastante robusta ante ataques aleatorios y bastante menos ante ataques dirigidos, lo que nos indica una vez más que el modelo libre de escala es el que se ajusta mejor.
+En la siguiente figura observamos que la red es bastante robusta ante ataques aleatorios y bastante menos ante ataques dirigidos, lo que nos indica una vez más que el modelo
+libre de escala es el que se ajusta mejor.
 
 Que disminuya tan rápido la conectividad eliminando una fracción tan pequeña de nos indica que debemos centrarnos en el estudio de esas proteínas principalmente.
 
@@ -51,12 +55,14 @@ Que disminuya tan rápido la conectividad eliminando una fracción tan pequeña 
 \subsection{Linked Communities}
 En esta sección procedemos a obtener las comunidades existentes dentro de nuestra red de proteínas, obtenida en la sección anterior.
 
-Antes debemos tener claro que las comunidades son conjuntos de nodos relacionados entre sí que poseen funciones semejantes y que buscan conseguir un objetivo común. Es por ello por lo que la identificación de las comunidades es un problema relevante para muchas áreas de investigación como la sociología, la biología o la informática.
+Antes debemos tener claro que las comunidades son conjuntos de nodos relacionados entre sí que poseen funciones semejantes y que buscan conseguir un objetivo común. 
+Es por ello por lo que la identificación de las comunidades es un problema relevante para muchas áreas de investigación como la sociología, la biología o la informática.
 
 En general, la comunidades se pueden clasificar en dos tipos, las que están formadas por nodos y las que están formadas por enlaces.
 
 \begin{itemize}
-\item Comunidad de nodos: Se tratan de subgrafos formados por nodos densamente conectados entre ellos, pero muy poco conectados con los nodos de alrededor, como se muestra en la imagen. 
+\item Comunidad de nodos: Se tratan de subgrafos formados por nodos densamente conectados entre ellos, pero muy poco conectados con los nodos de alrededor, 
+como se muestra en la imagen. 
 
 
 \begin{center}
@@ -68,7 +74,9 @@ En general, la comunidades se pueden clasificar en dos tipos, las que están for
 \end{center}
 
 
-\item Link community: Consiste en un subgrafo en el que existe una gran cantidad de enlaces pero muy pocos con las comunidades externas. La forma de detectar estos conjuntos es mediante la división de los enlaces de la red. En estas particiones, las conexiones determinan una comunidad, pero los nodos pueden pertenecer a varias comunidades. 
+\item Link community: Consiste en un subgrafo en el que existe una gran cantidad de enlaces pero muy pocos con las comunidades externas. 
+La forma de detectar estos conjuntos es mediante la división de los enlaces de la red. En estas particiones, las conexiones determinan una comunidad, 
+pero los nodos pueden pertenecer a varias comunidades. 
 
 
 \begin{center}
@@ -79,14 +87,18 @@ En general, la comunidades se pueden clasificar en dos tipos, las que están for
 
 \end{center}
 
-Con esto queremos remarcar que la importancia de la detección de estos subgrafos se debe a que en el campo de la biología, permiten encontrar módulos proteicos con una misma función celular o predecir las funciones de las proteínas.
+Con esto queremos remarcar que la importancia de la detección de estos subgrafos se debe a que en el campo de la biología, permiten encontrar módulos proteicos con una misma
+función celular o predecir las funciones de las proteínas.
 
-Por tanto, diseñaremos un código en R que nos permite la detección de las comunidades con el fin de filtrar aquellas que son más importantes (centralidad). De esta forma, podemos llevar a cabo un enriquecimiento funcional de las mismas y así obtener algunas de las funciones celulares que determinan red del SARS-CoV-2.
+Por tanto, diseñaremos un código en R que nos permite la detección de las comunidades con el fin de filtrar aquellas que son más importantes (centralidad). De esta forma,
+podemos llevar a cabo un enriquecimiento funcional de las mismas y así obtener algunas de las funciones celulares que determinan red del SARS-CoV-2.
 
 Además, en el código siguiente se incluyen diferentes gráficas para la visualización de las comunidades.
 \end{itemize}
 
-A lo largo de la ejecución del código hemos añadido distintas gráficas para la representación de las comunidades. A continuación se muestra un dendograma de las \textit{link communities}, en el que se puede apreciar una gran cantidad de comunidades. En esta imagen es difícil ver la centralidad de las comunidades, por lo que haremos más representaciones.
+A lo largo de la ejecución del código hemos añadido distintas gráficas para la representación de las comunidades. A continuación se muestra un dendograma de las 
+\textit{link communities}, en el que se puede apreciar una gran cantidad de comunidades. En esta imagen es difícil ver la centralidad de las comunidades, 
+por lo que haremos más representaciones.
 
 \begin{lstlisting}
 #link communities dendogram
@@ -248,3 +260,79 @@ Además se observa que estos componentes son incluso mecanismo de entrada direct
 
 En este caso nuestro análisis de las comunidades proteicas nos ha llevado a concretar la importancia funcional que podría ayudar a estudiar más en profundidad la acción del SARS-CoV2 a partir de un nivel topológico. 
 
+
+\subsection{Búsqueda en Drugbank}
+
+La búsqueda en drugbank arroja los siguientes resultados:
+
+\begin{lstlisting}
+
+IDs de los medicamentos cuyos targets se encuentran entre las
+proteínas más conectadas de la red  DB00753; DB01189 DB01133 
+DB03147 DB05015; DB06603 DB00175; DB00227; DB00277; DB00313;
+DB00641; DB01076; DB01095; DB01223; DB01303; DB02546; DB06176;
+DB09091 DB00157 DB12010 DB00570
+\end{lstlisting}
+
+A continuación, analizaremos algunos de ellos.\newline
+
+
+\begin{itemize}
+    \item \underline{Enfermedades cardiovasculares}
+\end{itemize}
+
+
+\subsubsection{Pravastatin, Lovastatin}
+
+La pravastatina es un medicamento que se suele usar para tratar y prevenir los eventos coronarios, disminuyendo la mortalidad en caso de que estos se den.
+
+
+\begin{center}
+
+\includegraphics[width=100mm,scale=1]{report/figures/pravastatina.PNG}
+
+\caption{\textit{Ruta metabólica de la pravastatina }}
+
+\end{center}
+
+ Existen evidencias de que el SARS-Cov-2 puede afectar al corazón\cite{Oudit2009SARS-coronavirusSARS}, agravando la condición de los pacientes y dejando secuelas que podrían ser
+ de por vida, por lo que el tratamientos de estos eventos coronarios y su prevención podría ser clave para reducir la mortalidad y mejorar la calidad de vida del enfermo.
+
+\subsubsection{Atorvastatin, Rosuvastatin, Fluvastatin, Simvastatin}
+
+\begin{center}
+\includegraphics[width=100mm,scale=1]{report/figures/statins.PNG}
+
+
+\caption{\textit{Tabla de afinidad de las estatinas tomada de \cite{Reiner2020StatinsInteraction} }}
+\end{center}
+
+Las \textbf{estatinas o statins} son una clase de medicamento que se emplean para el tratamiento de la dislipemia, concentración elevada lípidos o baja en lipoproteínas. En
+concreto, es son medicamentos muy usados para tratar las enfermedades cardiovasculares (ECV) como la aterosclerosis o la angina, puesto que los niveles elevados de colesterol
+(LDL) suponen un gran riesgo en el desarrollo de estas enfermedades, y este tipo de medicamentos dan lugar a una reducción significativa  de los niveles de LDL.
+
+Además, en el artículo \textbf{\textit{'Statins and the COVID-19 main protease: in silico evidence on direct interaction' }}se llegó a la conclusión de que las estatinas podrían
+ser inhibidores eficaces del SARS-CoV-2. Por tanto al igual que la pravastatina, cualquiera de estos medicamentos podrían ser útiles para la lucha contra el Covid-19, y más
+específicamente, contra los efectos cardíacos que provoca.\newline
+
+\begin{itemize}
+    \item \underline{Enfermedades respiratorias}
+\end{itemize}
+
+
+\subsubsection{Theophylline, Oxtriphylline}
+
+Medicamentos como la teofilina o oxtrifilina están indicados para tratar los síntomas de asma y bronquitis, entre otras patologías.
+Dado que comparten algunos síntomas en común con nuestro caso de estudio, este tipo de medicamentos podrían ser útiles para su tratamiento.
+
+\begin{center}
+
+\includegraphics[width=90mm,scale=1]{report/figures/adenosine.PNG}
+
+
+\caption{\textit{Vista 3D del receptor A2A adenosina}}
+
+\end{center}
+
+En el caso de la oxtrifilina, se trata de un broncodilatador cuyo mecanismo de acción implica al recepto A2A adenosina, que ya se había propuesto como sujeto de estudio.
+\cite{Abouelkhair2020TargetingHypothesis}
