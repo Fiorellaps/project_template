@@ -3,7 +3,7 @@ args <- commandArgs(TRUE)
 DATA_DIR <- paste(args[1], "/results", sep = "")
 setwd(DATA_DIR)
 
-### Configuramos el entorno de las librer�?as ###
+### Configuramos el entorno de las librerÃ?as ###
 print(getwd())
 .libPaths(c(.libPaths(), paste(getwd(),"software/deps_r",sep="/")))
 library("STRINGdb")
@@ -11,6 +11,10 @@ library("ggplot2")
 library("org.Hs.eg.db")
 library("enrichplot")
 library("ggnewscale")
+library("readxl")
+library("igraph")
+library("linkcomm")
+library("data.table")
 print(.libPaths())
 
 set.seed(365)
@@ -52,7 +56,104 @@ plot(proteins.mapped.network,
 )
 dev.off()
 
+######################## LINK COMMUNITIES FIORELLA #############################
+proteins.mapped.network.df <- igraph::as_data_frame(proteins.mapped.network, what="edges")
+proteins.mapped.network.df<-proteins.mapped.network.df[c("from","to","combined_score")]
+proteins.mapped.network.lc <- linkcomm::getLinkCommunities(proteins.mapped.network.df, hcmethod = "single",plot=FALSE)
+print(proteins.mapped.network.lc)
 
+# link communities summary plot
+png(file="linkcomm_summary.png")
+plot(proteins.mapped.network.lc, type = "summary")
+dev.off()
+# link communities dendogram
+# png(file="linkcomm_dend.png")
+# plot(proteins.mapped.network.lc, type = "dend")
+# dev.off()
+
+# link communities Fruchterman Reingold layout
+# png(file="linkcomm_layout.fruchterman.reingold.png")
+# png(file="linkcomm_graph.png")
+# plot(proteins.mapped.network.lc, type = "graph", vlabel=FALSE)#Le he quitado , layout = "layout.fruchterman.reingold"
+# dev.off()
+
+# link communities Spencer Circle layout
+# png(file="linkcomm_spencer.circle.png")
+# plot(proteins.mapped.network.lc, type = "graph", layout = "spencer.circle", vlabel=FALSE)
+# dev.off()
+
+# link communities Spencer Circle layout
+# displays only the nodes that belong to 5 or more communities
+png(file="linkcomm_common_nodes_5.png")
+plot(proteins.mapped.network.lc, type = "graph", shownodesin = 5, vlabel=FALSE) # Le he quitado  layout = "spencer.circle",
+dev.off()
+
+# link communities Node pies
+png(file="linkcomm_node.pies.png")
+plot(proteins.mapped.network.lc, type = "graph", shownodesin = 3, node.pies = TRUE, vlabel=FALSE)
+dev.off()
+
+# see link communities members
+png(file="linkcomm_communities_members.png")
+plot(proteins.mapped.network.lc, type = "members")
+dev.off()
+
+# obtener comunidades completamente anidadas dentro de una comunidad más grande de nodos
+print("##################################################################")
+print("##################################################################")
+print("Comunidades completamente anidadas dentro de una comunidad más grande de nodos")
+linkcomm::getAllNestedComm(proteins.mapped.network.lc)
+
+# comprobar comunidades anidadas
+print("##################################################################")
+print("##################################################################")
+print("Comprobando comunidades anidadas")
+linkcomm::getAllNestedComm(proteins.mapped.network.lc)[1]
+
+# indica que la comunidad 11 esta completamente anidad por los nodos de la comunidad 74
+# png(file="linkcomm_communities_11.74.png")
+# plot(proteins.mapped.network.lc, type = "graph", clusterids = c(11,74))
+# dev.off()
+
+# Visualizar relaciones entre comunidades
+print("##################################################################")
+print("##################################################################")
+print("Visualizando relaciones entre comunidades")
+lc.communities.relations <- linkcomm::getClusterRelatedness(proteins.mapped.network.lc, hcmethod = "average",cutat = 0.5) #average link method cutting at 0.5
+linkcomm::getClusterRelatedness(proteins.mapped.network.lc, hcmethod = "ward.D2") #ward.D2 link method
+
+# get smaller number of communities (meta-communities)
+
+lc.meta.communities <- linkcomm::meta.communities(proteins.mapped.network.lc, hcmethod = "average", deepSplit = 0)
+
+png(file="linkcomm_metacommunities_summary.png")
+plot(lc.meta.communities, type = "summary")
+dev.off()
+png(file="linkcomm_metacommunities_graph.png")
+dev.off()
+plot(proteins.mapped.network.lc, type = "graph", vlabel=FALSE)#Le he quitado , layout = layout.fruchterman.reingold
+png(file="linkcomm_metacommunities_members.png")
+plot(lc.meta.communities, type = "members")
+dev.off()
+
+
+# Community centrality
+print("##################################################################")
+print("##################################################################")
+print("Visualizando community centrality")
+community.centrality <- linkcomm::getCommunityCentrality(proteins.mapped.network.lc)
+
+# modularity of the communities
+community.connectedness <- linkcomm::getCommunityConnectedness(proteins.mapped.network.lc, conn = "modularity") 
+png(file="linkcomm_communities_modularity.png")
+plot(proteins.mapped.network.lc, type = "commsumm", summary = "modularity")
+dev.off()
+
+# Focus on one linkcomm
+# plot one cluster that I have chosen randomly
+png(file="cluster12_graph.png")
+plot(proteins.mapped.network.lc, type = "graph", clusterids = 12, vlabel=FALSE)
+dev.off()
 
 ######################## ENRIQUECIMIENTO ADRIAN #############################
 
@@ -60,18 +161,18 @@ print("##################################################################")
 print("##################################################################")
 print("Enriquecimiento Funcional con STRINGdb")
 
-# El enriquecimiento se aplicará a aquellas comunidades que tengan un mayor grado de conectividad, 
-# ya que resultan ser las más interesantes. Por ello hacemos lo siguiente:
+# El enriquecimiento se aplicarÃ¡ a aquellas comunidades que tengan un mayor grado de conectividad, 
+# ya que resultan ser las mÃ¡s interesantes. Por ello hacemos lo siguiente:
 best.communities <- sort(community.connectedness, decreasing = TRUE)[1:5]
 
-# Diseñamos la función de enriquecimiento:
+# DiseÃ±amos la funciÃ³n de enriquecimiento:
 enriquecimiento <- function(cluster) {
-  # Observamos la representación de los genes del cluster
+  # Observamos la representaciÃ³n de los genes del cluster
   png(paste("function_red_cluster_plot_", cluster, ".png", sep = ""))
   plot(proteins.mapped.network.lc, type = "graph", clusterids = cluster)
   dev.off()
   
-  # Extraemos los ids de las prote�?nas del cluster
+  # Extraemos los ids de las proteÃ?nas del cluster
   proteins.cluster.string_ids <- paste0("9606.ENSP00000", linkcomm::getNodesIn(proteins.mapped.network.lc, clusterids = cluster, type = "names"))
   
   # Enriquecimiento funcional con GO
@@ -90,7 +191,7 @@ enriquecimiento <- function(cluster) {
   enrichment <- rbind(enrichmentGO, enrichmentKEGG, enrichmentPfam)
   data.table::setcolorder(enrichment, c(11, c(1:10)))
   
-  # Agrupamos filas repetidas indicando las ontolog�?as de origen
+  # Agrupamos filas repetidas indicando las ontologÃ?as de origen
   for (i in enrichment$term[!duplicated(enrichment$term)]) {
     num_filas <- which(enrichment$term == i)
     ontologias <- paste(enrichment[num_filas, 1], collapse = ", ")
