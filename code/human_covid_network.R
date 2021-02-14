@@ -56,6 +56,214 @@ plot(proteins.mapped.network,
 )
 dev.off()
 
+######################## ANALISIS PRELIMINAR ROCIO ###################################################
+
+G.degrees <- igraph::degree(proteins.mapped.network)
+
+## Degree distribution
+
+G.degree.histogram <- as.data.frame(table(G.degrees))
+G.degree.histogram[,1] <- as.numeric( paste(G.degree.histogram[,1]))
+
+png("degree_distribution.png")
+ggplot2::ggplot(G.degree.histogram, aes(x = G.degrees, y = Freq)) +
+  geom_point(color="cadetblue4", size=2) +
+  scale_x_continuous("Degree\n(nodes with this amount of connections)",
+                     breaks = c(1, 3, 10, 30, 100, 300), 
+                     trans = "log10") +
+  scale_y_continuous("Frequency\n(how many of them)",
+                     breaks = c(1, 3, 10, 30, 100, 300),
+                     trans = "log10") +
+  ggtitle("Degree Distribution") +
+  # geom_line() +
+  theme_bw()
+dev.off()
+
+## Clustering coefficient
+
+t = igraph::transitivity(proteins.mapped.network, type="local", isolates = c("zero"))
+cc = data.frame(deg = G.degrees, clust.coef = t, row.names = NULL)
+
+png("clustering_coefficient_log.png")
+ggplot2::ggplot(cc, aes(x = deg, y = clust.coef)) +
+  geom_point(color="cadetblue4", size=2) +
+  scale_x_continuous("Degree\n(nodes with this amount of connections)",
+                     breaks = c(1, 3, 10, 30, 100, 300),
+                     trans = "log10"
+  ) +
+  scale_y_continuous("Clustering coefficient",
+                     breaks = c(1, 3, 10, 30, 100, 300, 1000),
+                     trans = "log10"
+  ) +
+  ggtitle("Clustering coefficient") +
+  theme_bw()
+dev.off()
+
+## Node distance
+
+dt <- igraph::distance_table(proteins.mapped.network, directed = FALSE)
+dt.frame <- as.data.frame(dt)
+index <- 1:length(dt.frame$res)
+s <- sum(dt.frame$res)
+dt.frame$res <-dt.frame$res/s
+graph_md <- igraph::mean_distance(proteins.mapped.network, directed = FALSE, unconnected = FALSE)
+png("Node_distance.png")
+ggplot2::ggplot(dt.frame, aes(x = index, y = res)) +
+  scale_x_continuous("Distance"#,
+                     #breaks = c(1, 3, 10, 30, 100, 300),
+                     #trans = "log10"
+  ) +
+  scale_y_continuous("Pd"#,
+                     #breaks = c(1, 3, 10, 30, 100, 300, 1000),
+                     #trans = "log10"
+  ) +
+  ggtitle("Node distance") +
+  theme_bw()+
+  geom_line(color="azure3", size=1.5) +
+  geom_point(color="cadetblue4", size=2)+
+  geom_segment(color="gray", size = 1.25, linetype = "dashed",aes(x = graph_md, y = 0, xend = graph_md, yend = 0.35))
+dev.off()
+
+######################## ROBUSTEZ ROCIO ###################################
+
+################### Functions #########################
+
+heter <- function(network) {
+  require(igraph)
+  return(var(igraph::degree(network))/mean(igraph::degree(network))
+  )
+}
+
+sequential.attacks.targeted <- function(grafo, measure=degree){
+  # Computes the size of the largest cluster as we remove vertices from high degree to low degree (relative to the original graph)
+  # Implements the robustness described in Schneider, C. M. & Moreira, A. A. Mitigation of malicious attacks on networks. in (2011). doi:10.1073/pnas.1009440108/-/DCSupplemental
+  # update the degree distribution after each node removal step
+  
+  q = seq(from=0,to=1,by=0.01)
+  g = grafo
+  S = max(igraph::components(grafo)$csize)/igraph::vcount(grafo)
+  contador = S
+  removalset = NULL
+  v = igraph::vcount(grafo)
+  s = max(igraph::components(grafo)$csize)
+  for(i in q){
+    if(max(igraph::components(g)$csize)/igraph::vcount(grafo) >0.05){
+      removalset <- names(sort(igraph::degree(g),decreasing = T)[1:(i*igraph::vcount(g))])
+      g <- igraph::delete.vertices(graph = g, v = removalset)
+      S = c(S, max(igraph::components(g)$csize)/igraph::vcount(grafo))
+      v <- c(v, igraph::vcount(g))
+      s = c(s, max(igraph::components(g)$csize))
+      contador = max(igraph::components(g)$csize)/igraph::vcount(grafo)
+    }
+    
+  }
+  S.vs.q <- dplyr::tbl_df(data.frame(cbind(q[1:length(S)],S,s,v)))
+  names(S.vs.q) <- c("q", "S", "s", "v")
+  return(S.vs.q)
+}
+
+
+sequential.attacks.random <- function(grafo, measure=degree){
+  
+  q = seq(from=0,to=1,by=0.01)
+  g = grafo
+  S = max(igraph::components(grafo)$csize)/igraph::vcount(grafo)
+  contador = S
+  removalset = NULL
+  v = igraph::vcount(grafo)
+  s = max(igraph::components(grafo)$csize)
+  for(i in q){
+    if(contador > 0.05 & length(removalset) < igraph::vcount(g)/2){
+      removalset <- sample(x = igraph::V(g)$name, size = 10, replace = F)
+      g <- igraph::delete.vertices(graph = g, v = removalset)
+      S = c(S, max(igraph::components(g)$csize)/igraph::vcount(grafo))
+      v <- c(v, igraph::vcount(g))
+      s = c(s, max(igraph::components(g)$csize))
+      contador = max(igraph::components(g)$csize)/igraph::vcount(grafo)
+    }
+    
+  }
+  S.vs.q <- dplyr::tbl_df(data.frame(cbind(q[1:length(S)],S,s,v)))
+  names(S.vs.q) <- c("q", "S", "s", "v")
+  return(S.vs.q)
+}
+
+
+robustness.targeted2 <- function(grafo, measure=igraph::degree){
+
+  q = seq(from=0.01,to=1,by=0.01)
+  g = grafo
+  S = max(igraph::components(grafo)$csize)/igraph::vcount(grafo)
+  contador = S
+  removalset = NULL
+  for(i in q){
+    if(max(igraph::components(g)$csize)/igraph::vcount(grafo) >0.05){
+      removalset <- names(sort(igraph::degree(g),decreasing = T)[1:(i*igraph::vcount(g))])
+      g <- igraph::delete.vertices(graph = g, v = removalset)
+      S = c(S, max(igraph::components(g)$csize)/igraph::vcount(grafo))
+      contador = max(igraph::components(g)$csize)/igraph::vcount(grafo)
+    }
+  }
+  x <- as.numeric(q[1:length(S)])
+  y <- as.numeric(S)
+  id <- order(x)
+  return(sum(diff(x[id])*zoo::rollmean(y[id],2)))
+} 
+
+
+robustness.random2 <- function(grafo, measure=degree){
+
+  q = seq(from=0.01,to=1,by=0.01)
+  g = grafo
+  S = max(igraph::components(grafo)$csize)/igraph::vcount(grafo)
+  contador = S
+  removalset = NULL
+  for(i in q){
+    if(contador > 0.05 & length(removalset) < igraph::vcount(g)/2){
+      removalset <- sample(x = igraph::V(g)$name, size = 10, replace = F)
+      g <- igraph::delete.vertices(graph = g, v = removalset)
+      S = c(S, max(igraph::components(g)$csize)/igraph::vcount(grafo))
+      
+      contador = max(igraph::components(g)$csize)/igraph::vcount(grafo)
+    }
+  }
+  x <- as.numeric(q[1:length(S)])
+  x <- x[!is.na(x)]
+  y <- as.numeric(S)
+  id <- order(x)
+  return(sum(diff(x[id])*zoo::rollmean(y[id],2)))
+} 
+
+####### Cálculo de la robustez
+cat("/nRobustez de la red frente a ataques aleatorios: ", robustness.random2(proteins.mapped.network))
+cat("/nRobustez de la red frente a ataques dirigidos: ",robustness.targeted2(proteins.mapped.network))
+
+# plots
+
+### Targeted attacks
+att.g <- sequential.attacks.targeted(proteins.mapped.network)
+att.g$attack <- rep("targeted")
+
+### Random attacks
+
+r.att.g <- sequential.attacks.random(proteins.mapped.network)
+r.att.g$attack <- rep("random")
+
+attack = rbind(att.g,r.att.g)
+
+
+png(file = 'sequential_attacks.png')
+ggplot2::ggplot(attack, aes(x=q, y=S, color=attack)) + geom_point(alpha=.4, size=2) +
+  theme_bw() +
+  theme(plot.background = element_blank(),  panel.grid.minor = element_blank(),plot.title=element_text(size=15)) +
+  geom_line() +
+  ggtitle("Random vs. Targeted sequential attacks") +
+  ylab("S(q)") +
+  xlab("q")
+dev.off()
+
+
+
 ######################## LINK COMMUNITIES FIORELLA #############################
 proteins.mapped.network.df <- igraph::as_data_frame(proteins.mapped.network, what="edges")
 proteins.mapped.network.df<-proteins.mapped.network.df[c("from","to","combined_score")]
