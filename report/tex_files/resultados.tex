@@ -118,3 +118,86 @@ dev.off()
 \end{center}
 
 Por tanto, realizaremos un análisis funcional centrándonos en aquellas comunidades con una modularidad mayor, para determinar si sus funciones moleculares son determinantes o no.
+
+\subsection{Enriquecimiento funcional}
+\subsubsection{Cluster 104}
+
+\begin{center}
+\vspace{1.5ex}
+\includegraphics[width=100mm,scale=1.1]{report/figures/enrichGO_heatmap_cnetplot-BP-104-2.PNG}
+\vspace{1.5ex}
+\end{center}
+
+
+En la figura superior podemos observar mediante un mapa de calor o heatmap, los 5 términos de la GO predominantes de la subred, además de otras funciones asociadas a cada proteína. 
+Para el clúster 104 vemos que el término con un mayor tamaño en el mapa es ‘protein folding’. Esto indica que su GeneRatio (porcentaje de DEGs asociado al término) es grande y el q valor o p valor ajustado, es pequeño.
+
+
+\begin{center}
+\vspace{1.5ex}
+\includegraphics[width=100mm,scale=1.1]{report/figures/enrichGO_heatmap_cnetplot-BP-104-1.PNG}
+\vspace{1.5ex}
+\end{center}
+
+
+Investigando en la ontología, obtenemos que el \textbf{plegamiento de proteínas} es un proceso biológico que facilita el ensamblaje de proteínas para dar lugar a una estructura terciaria correcta.
+
+
+De ahí podemos deducir el papel que juega esta función pues un fallo en plegamiento puede provocar un desorden celular con amplias consecuencias. Es más, existen una gran cantidad de enfermedades generadas por este tipo de fallos como el Alzheimer, el Parkinson, la fibrosis quística y muchos otros trastornos degenerativos, tal y como se mencionan en el artículo \textbf{\textit{‘Protein-misfolding diseases and chaperone-based therapeutic approaches’}}.
+Según este estudio, “más de la mitad de las enfermedades humanas podrían estar relacionadas con un plegamiento incorrecto de las proteínas”. Este proceso parece afectar a las chaperonas, pues son las encargadas de reparar las mutaciones que causan las patologías.
+
+Por otra parte, la \textbf{‘ruta de señalización del receptor acoplado a la proteína G que inhibe la fosfolipasa C’}, es otro de los procedimientos identificados en mayor medida con el clúster en cuestión.   Concretamente, esta vía además de inhibir la actividad de la fosfolipasa C, conlleva una disminución de los niveles de DAG y IP3. Este último es un mensajero de señalización celular cuya disminución parece estar relacionada con la \textbf{autofagia} o vía de degradación de proteínas, orgánulos y material citoplasmático. Por su parte, los segundos mensajeros DAG dan lugar a la activación de la proteína quinasa C, la cual permite la activación de una serie de rutas metabólicas que inducen la expresión de proteínas que activan los linfocitos T. Estos desempeñan un papel fundamental en la regulación del sistema inmune, por lo que una alteración de los mismo puede generar una inmunodeficiencia severa.
+
+\begin{center}
+\includegraphics[width=70mm,scale=1]{report/figures/signaling pathway.png}
+\end{center}
+
+Otra de las funciones biológicas que aparecen en el enriquecimiento de este módulo, está relacionada con la \textbf{regulación de la presión sanguínea}, y, por tanto, de los niveles de oxígeno. Este es un proceso muy complejo que viene determinado por el Sistema Nervioso Autónomo, el SNC y el riñón. El objetivo del SN es mantener la presión arterial (PA) mediante la regulación de los niveles de oxígeno. Sin embargo, un nivel alto de PA o \textbf{hipertensión}, puede llegar a ser nocivo para el corazón, puesto que lo obliga a bombear más sangre, contribuyendo así al endurecimiento de las arterias, a la producción de accidentes cerebrovasculares, enfermedades renales o insuficiencia cardíaca.
+
+Según un estudio reciente, \textbf{\textit{'COVID-19 and Hypertension: What We Know and Don't Know'}}, el SARS-CV-2 interactúa con el Sistema renina-angiotensina aldosterona (RAAS), actuando sobre el receptor ACE2 induciendo una desregulación de la misma, lo que genera la acumulación lo local de angiotensina II.  Debido a que el sistema RAAS se encarga de regular la presión arterial, la alteración del mismo da lugar a la hipertensión de los pacientes.
+
+\begin{center}
+\vspace{1ex}
+\includegraphics[width=100mm,scale=1]{report/figures/enrichKEGG_enrichmap-BP-104.png}
+\vspace{1ex}
+\end{center}
+
+Para concluir, en la figura superior podemos observar como alguno de los procesos mencionados se encuentran en el mapa de vías metabólicas. Además, en el mapa de calor obtenido, también se observan muchos de los términos más presentados en el clúster 104.
+
+\subsubsection{Clúster 84}
+
+\begin{center}
+\includegraphics[width=120mm,scale=1]{report/figures/enrichGO_dotplot-BP-84.pdf}
+\end{center}
+
+Este clúster está formado por 4 proteínas altamente interconectadas cuyas funciones biológicas se relacionan con 4 aspectos principalmente. El primero de ellos y el más abundante es el \textbf{metabolismo y catabolismo de glúcidos y lípidos}, los cuales son nuestra principal fuente de energía en el organismo. El hecho de que las proteínas del virus interactúen con las de nuestro clúster puede provocar alteraciones en el desarrollo de esta función tan esencial. El siguiente tema a tratar es la \textbf{regulación negativa del óxido nítrico}. Este compuesto es mencionado en varias de las funciones biológicas de nuestras proteínas y se trata de un gas que se genera en el endotelio. Se caracteriza por tener propiedades vasodilatadoras y contribuir al mantenimiento de la presión arterial baja. Por tanto, una regulación negativa del mismo significaría un déficit de este gas en el cuerpo, lo que puede producir entre otras cosas, hipertensión arterial. En tercer lugar en nuestras funciones se hace mención a la \textbf{ruta de la ciclooxigenasa (COX)} y por tanto a sus principales productos que son las \textbf{prostaglandinas}. Éstas son un conjunto de sustancias de carácter lipídico derivadas de los ácidos grasos que conllevan diversos efectos en nuestro organismo, a menudo contrapuestos. Las prostaglandinas afectan y actúan sobre diferentes sistemas, incluyendo el sistema nervioso, el músculo liso y el sistema reproductor. Además, juegan un papel importante en regular diversas funciones como la presión sanguínea, la coagulación de la sangre, la respuesta inflamatoria alérgica y la actividad del aparato digestivo. Por tanto, la interacción del virus con estos compuestos pueden suponer un ataque en nuestro cuerpo. Finalmente aparecen varias funciones relacionadas con el \textbf{transporte intracelular}, lo cual es de vital importancia en las células para expulsar de su interior los desechos del metabolismo o trasladar sustancias que sintetiza como hormonas entre otras actividades.
+
+\begin{center}
+\vspace{1.5ex}
+\includegraphics[width=100mm,scale=1]{report/figures/enrichGO_enrichmap-BP-84.pdf}
+\vspace{1.5ex}
+\end{center}
+
+Además, se puede apreciar como la clasificación de nuestras funciones en estos 4 aspectos se encuentra claramente reflejada en la figura anterior, donde las proteínas pertenecientes a un mismo tema presentan un mayor número de conexiones entre ellas.
+
+\subsubsection{Clúster 79}
+La principal funcionalidad que podemos ver es la biosíntesis de las proteínas de membrana GPI: Proteínas de la superficie celular que se pueden unir a la membrana mediante una estructura de glicolípidos denominadas \textbf{anclaje de glicosilfosfatidilinositol (GPI)}. Las proteínas que son detectadas en el cluster con una mayor fiabilidad estadística son las necesarias para la construcción de estas estructuras. Procesos celulares asociados a la biosíntesis de lipoproteínas son atribuidos a dichas proteínas junto con procesos metabólicos de la formación de estos complejos GPI. 
+
+\begin{center}
+\includegraphics[width=100mm,scale=1.1]{report/figures/enrichGO_heatmap_cnetplot-BP-79.pdf}
+\end{center}
+\vspace{1.5ex}
+
+
+Estas estructuras conforman las balsas lipídicas en las membranas celulares las cuales son zonas accedidas por ciertas proteínas del SARS-CoV2, en concreto la proteína \textbf{ORF9c}, la cual podría tratarse de una de las proteínas del coronavirus humano que adquiere un dominio de transmembrana mediante la interacción con estos anclajes y que podría estar asociada con el ataque hacia procesos de señalización inmunológicos. En recientes estudios se muestra cómo ORF9c interactúa con las proteínas de membrana y altera los procesos antivirales en líneas celulares epiteliales pulmonares.
+
+Además se observa que estos componentes son incluso mecanismo de entrada directa en otros virus y se aprecian diferencias en cuanto a estos procedimientos en distintos tipos de coronavirus.
+
+\vspace{1.5ex}
+\begin{center}
+\includegraphics[width=100mm,scale=1.1]{report/figures/enrichGO_enrich_map-BP-79.pdf}
+\end{center}
+\vspace{1.5ex}
+
+En este caso nuestro análisis de las comunidades proteicas nos ha llevado a concretar la importancia funcional que podría ayudar a estudiar más en profundidad la acción del SARS-CoV2 a partir de un nivel topológico. 
+
